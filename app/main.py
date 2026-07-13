@@ -1,10 +1,13 @@
 from fastapi import FastAPI, HTTPException
 
 from app.schemas import (
+    CodeFile,
+    CodeFileRequest,
     RepositoryFilesResponse,
     RepositoryScanRequest,
     RepositoryScanResponse,
 )
+from app.services.code_reader import read_code_file
 from app.services.repository_scanner import scan_repository
 
 app = FastAPI(
@@ -43,3 +46,14 @@ def list_repository_files(repo_path: str):
         repo_path=repo_path,
         files=files,
     )
+
+
+@app.post("/code/files/read", response_model=CodeFile)
+def read_code_file_api(request: CodeFileRequest):
+    try:
+        return read_code_file(
+            repo_path=request.repo_path,
+            file_path=request.file_path,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

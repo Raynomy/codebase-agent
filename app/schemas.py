@@ -20,3 +20,30 @@ class RepositoryScanResponse(BaseModel):
 class RepositoryFilesResponse(BaseModel):
     repo_path: str
     files: list[RepositoryFile]
+
+
+class CodeFileRequest(BaseModel):
+    repo_path: str = Field(min_length=1)
+    file_path: str = Field(min_length=1)
+
+
+class CodeLine(BaseModel):
+    line_number: int
+    content: str
+
+
+class CodeFile(BaseModel):
+    repo_path: str
+    file_path: str
+    file_type: str
+    line_count: int
+    lines: list[CodeLine]
+
+
+class CodeChunk(BaseModel):
+    file_path: str
+    file_type: str
+    start_line: int
+    end_line: int
+    chunk_type: str
+    content: str
