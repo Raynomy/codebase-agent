@@ -6,11 +6,14 @@ from app.schemas import (
     CodeFile,
     CodeFileRequest,
     RepositoryFilesResponse,
+    RepositoryIndexRequest,
+    RepositoryIndexResponse,
     RepositoryScanRequest,
     RepositoryScanResponse,
 )
 from app.services.code_chunker import preview_code_chunks
 from app.services.code_reader import read_code_file
+from app.services.index_service import index_repository_file
 from app.services.repository_scanner import scan_repository
 
 app = FastAPI(
@@ -61,6 +64,7 @@ def read_code_file_api(request: CodeFileRequest):
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+
 @app.post("/repositories/chunks/preview", response_model=ChunkPreviewResponse)
 def preview_repository_chunks(request: ChunkPreviewRequest):
     try:
@@ -79,3 +83,19 @@ def preview_repository_chunks(request: ChunkPreviewRequest):
         chunk_count=len(chunks),
         chunks=chunks,
     )
+
+
+@app.post("/repositories/index", response_model=RepositoryIndexResponse)
+def index_repository(request: RepositoryIndexRequest):
+    try:
+        result = index_repository_file(
+            repo_path=request.repo_path,
+            file_path=request.file_path,
+            chunk_size=request.chunk_size,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return RepositoryIndexResponse(**result)
