@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 
 from app.schemas import (
+    AskRequest,
+    AskResponse,
     ChunkPreviewRequest,
     ChunkPreviewResponse,
     CodeFile,
@@ -15,6 +17,7 @@ from app.services.code_chunker import preview_code_chunks
 from app.services.code_reader import read_code_file
 from app.services.index_service import index_repository_file
 from app.services.repository_scanner import scan_repository
+from app.services.rag_service import ask_codebase
 
 app = FastAPI(
     title="Codebase Agent",
@@ -99,3 +102,22 @@ def index_repository(request: RepositoryIndexRequest):
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     return RepositoryIndexResponse(**result)
+
+
+
+@app.post("/repositories/ask", response_model=AskResponse)
+def ask_repository(request: AskRequest):
+    try:
+        result = ask_codebase(
+            question=request.question,
+            top_k=request.top_k,
+            score_threshold=request.score_threshold,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+    return AskResponse(
+        question=request.question,
+        answer=result["answer"],
+        sources=result["sources"],
+    )

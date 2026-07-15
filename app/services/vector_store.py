@@ -45,3 +45,24 @@ def upsert_chunks(chunks: list[CodeChunk], embeddings: list[list[float]]) -> int
     )
 
     return len(points)
+
+
+def search_chunks(
+    query_embedding: list[float],
+    top_k: int,
+    score_threshold: float,
+) -> list[dict]:
+    response = client.query_points(
+        collection_name=COLLECTION_NAME,
+        query=query_embedding,
+        limit=top_k,
+        score_threshold=score_threshold,
+    )
+
+    return [
+        {
+            "score": point.score,
+            "payload": point.payload,
+        }
+        for point in response.points
+    ]

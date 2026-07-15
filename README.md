@@ -448,6 +448,70 @@ POST /repositories/index
 
 Embedding 失败时，接口会返回 `503`。
 
+### 基于代码仓库问答
+
+```http
+POST /repositories/ask
+```
+
+用于对已索引的代码仓库内容进行问答。
+
+当前问答流程：
+
+```text
+用户问题
+-> query embedding
+-> Qdrant top-k 检索
+-> 相似度阈值过滤
+-> 拼接代码上下文 context
+-> 构造 grounding prompt
+-> LLM 基于资料生成回答
+-> 返回 answer + sources
+```
+
+请求示例：
+
+```json
+{
+  "question": "这个项目是做什么的？",
+  "top_k": 3,
+  "score_threshold": 0.5
+}
+```
+
+响应示例：
+
+```json
+{
+  "question": "这个项目是做什么的？",
+  "answer": "根据提供的代码仓库资料，该项目是一个代码仓库理解助手...",
+  "sources": [
+    {
+      "file_path": "README.md",
+      "start_line": 81,
+      "end_line": 90,
+      "score": 0.65,
+      "content": "..."
+    }
+  ]
+}
+```
+
+当前返回的 `sources` 包含：
+
+- `file_path`
+- `start_line`
+- `end_line`
+- `score`
+- `content`
+
+当前限制：
+
+- 需要先调用 `/repositories/index` 建立索引
+- 当前 Qdrant 使用内存模式，服务重启后索引会丢失
+- 当前索引单个文件时会重建 collection
+- 当前回答质量依赖检索到的 chunks 是否足够相关
+
 ## 当前状态
 
 当前处于 V1 初始阶段：
@@ -471,8 +535,12 @@ Embedding 失败时，接口会返回 `503`。
 - [x] 接入 embedding model
 - [x] 接入 Qdrant 内存向量库
 - [x] 实现 `/repositories/index`
+- [x] 实现向量检索
+- [x] 实现相似度阈值过滤
+- [x] 实现 `/repositories/ask`
+- [x] 实现基于代码上下文的问答
+- [x] 返回 answer + sources
 - [ ] 实现多文件索引
-- [ ] 实现向量检索接口
 - [ ] 提交代码
 
 ## 参考项目

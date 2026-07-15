@@ -75,3 +75,24 @@ class RepositoryIndexResponse(BaseModel):
     chunk_size: int
     chunk_count: int
     indexed_count: int
+
+
+
+class AskRequest(BaseModel):
+    question: str = Field(min_length=1)
+    top_k: int = Field(default=3, ge=1, le=10)
+    score_threshold: float = Field(default=0.5, ge=0, le=1)
+
+
+class SourceChunk(BaseModel):
+    file_path: str
+    start_line: int
+    end_line: int
+    score: float
+    content: str
+
+
+class AskResponse(BaseModel):
+    question: str
+    answer: str
+    sources: list[SourceChunk]
