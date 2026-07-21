@@ -91,6 +91,8 @@ class SourceChunk(BaseModel):
     end_line: int
     score: float
     content: str
+    chunk_type: str
+    symbol_name: str | None = None
 
 
 class AskResponse(BaseModel):

@@ -476,9 +476,9 @@ POST /repositories/ask
 
 ```json
 {
-  "question": "这个项目是做什么的？",
+  "question": "ask_repository 这个函数在哪个文件？",
   "top_k": 3,
-  "score_threshold": 0.5
+  "score_threshold": 0.4
 }
 ```
 
@@ -486,15 +486,17 @@ POST /repositories/ask
 
 ```json
 {
-  "question": "这个项目是做什么的？",
-  "answer": "根据提供的代码仓库资料，该项目是一个代码仓库理解助手...",
+  "question": "ask_repository 这个函数在哪个文件？",
+  "answer": "根据资料，ask_repository 函数位于文件 app/main.py 中。",
   "sources": [
     {
-      "file_path": "README.md",
-      "start_line": 81,
-      "end_line": 90,
-      "score": 0.65,
-      "content": "..."
+      "file_path": "app/main.py",
+      "start_line": 108,
+      "end_line": 123,
+      "score": 0.75,
+      "content": "@app.post(\"/repositories/ask\", response_model=AskResponse)\ndef ask_repository(request: AskRequest):\n    ...",
+      "chunk_type": "function",
+      "symbol_name": "ask_repository"
     }
   ]
 }
@@ -507,6 +509,8 @@ POST /repositories/ask
 - `end_line`
 - `score`
 - `content`
+- `chunk_type`
+- `symbol_name`
 
 当前限制：
 
@@ -552,6 +556,10 @@ POST /repositories/ask
 - [x] 实现 `/repositories/ask`
 - [x] 实现基于代码上下文的问答
 - [x] 返回 answer + sources
+- [x] 增强 sources 返回结构
+- [x] sources 返回 `chunk_type`
+- [x] sources 返回 `symbol_name`
+- [x] sources 返回原始代码片段
 - [ ] 实现多文件索引
 - [ ] 提交代码
 

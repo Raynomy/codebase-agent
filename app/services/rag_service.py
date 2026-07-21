@@ -23,13 +23,22 @@ def build_context(search_results: list[dict]) -> str:
     for index, result in enumerate(search_results, start=1):
         payload = result["payload"]
 
+        symbol_name = payload.get("symbol_name")
+        chunk_type = payload.get("chunk_type")
+
+        if symbol_name:
+            symbol_text = f"{chunk_type} {symbol_name}"
+        else:
+            symbol_text = chunk_type or "unknown"
+
         context_parts.append(
             f"""资料 {index}
-文件：{payload["file_path"]}
-行号：{payload["start_line"]}-{payload["end_line"]}
-内容：
-{payload["content"]}
-"""
+        文件：{payload["file_path"]}
+        位置：{symbol_text}
+        行号：{payload["start_line"]}-{payload["end_line"]}
+        内容：
+        {payload["content"]}
+        """
         )
 
     return "\n".join(context_parts)
@@ -108,6 +117,8 @@ def ask_codebase(
                 "end_line": payload["end_line"],
                 "score": result["score"],
                 "content": payload["content"],
+                "chunk_type": payload["chunk_type"],
+                "symbol_name": payload.get("symbol_name"),
             }
         )
 

@@ -34,6 +34,7 @@ def upsert_chunks(chunks: list[CodeChunk], embeddings: list[list[float]]) -> int
                     "start_line": chunk.start_line,
                     "end_line": chunk.end_line,
                     "chunk_type": chunk.chunk_type,
+                    "symbol_name": chunk.symbol_name,
                     "content": chunk.content,
                 },
             )
