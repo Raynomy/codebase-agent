@@ -1,5 +1,6 @@
 from app.schemas import CodeChunk
 from app.services.code_reader import read_code_file
+from app.services.python_symbol_parser import parse_python_symbols
 
 
 MARKDOWN_TYPES = {"md"}
@@ -18,12 +19,10 @@ def preview_code_chunks(repo_path: str, file_path: str, chunk_size: int) -> list
         )
 
     if code_file.file_type in PYTHON_TYPES:
-        return chunk_by_fixed_lines(
+        return chunk_python_file_by_symbols(
             file_path=code_file.file_path,
             file_type=code_file.file_type,
             lines=[line.content for line in code_file.lines],
-            chunk_size=chunk_size,
-            chunk_type="python_lines",
         )
 
     return chunk_by_fixed_lines(
@@ -67,6 +66,76 @@ def chunk_markdown_file(
                 start_line_offset=start_line,
             )
         )
+
+    return chunks
+
+def chunk_python_file_by_symbols(
+    file_path: str,
+    file_type: str,
+    lines: list[str],
+) -> list[CodeChunk]:
+    symbols = parse_python_symbols(file_path)
+
+    chunks: list[CodeChunk] = []
+    covered_lines: set[int] = set()
+
+    for symbol in symbols:
+        start_line = symbol["start_line"]
+        end_line = symbol["end_line"]
+
+        symbol_lines = lines[start_line - 1 : end_line]
+
+        chunks.append(
+            build_chunk(
+                file_path=file_path,
+                file_type=file_type,
+                start_line=start_line,
+                lines=symbol_lines,
+                chunk_type=symbol["symbol_type"],
+                symbol_name=symbol["symbol_name"],
+            )
+        )
+
+        covered_lines.update(range(start_line, end_line + 1))
+
+    module_lines = []
+    module_start_line = None
+
+    for line_number, line in enumerate(lines, start=1):
+        if line_number in covered_lines:
+            if module_lines and module_start_line is not None:
+                chunks.append(
+                    build_chunk(
+                        file_path=file_path,
+                        file_type=file_type,
+                        start_line=module_start_line,
+                        lines=module_lines,
+                        chunk_type="module",
+                    )
+                )
+
+                module_lines = []
+                module_start_line = None
+
+            continue
+
+        if module_start_line is None:
+            module_start_line = line_number
+
+        module_lines.append(line)
+
+    if module_lines and module_start_line is not None:
+        chunks.append(
+            build_chunk(
+                file_path=file_path,
+                file_type=file_type,
+                start_line=module_start_line,
+                lines=module_lines,
+                chunk_type="module",
+            )
+        )
+
+    chunks.sort(key=lambda chunk: chunk.start_line)
 
     return chunks
 
@@ -125,6 +194,7 @@ def build_chunk(
     start_line: int,
     lines: list[str],
     chunk_type: str,
+    symbol_name: str | None = None,
 ) -> CodeChunk:
     return CodeChunk(
         file_path=file_path,
@@ -133,4 +203,5 @@ def build_chunk(
         end_line=start_line + len(lines) - 1,
         chunk_type=chunk_type,
         content="\n".join(lines),
+        symbol_name=symbol_name,
     )

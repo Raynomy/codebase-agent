@@ -1,4 +1,8 @@
-from app.services.code_chunker import chunk_by_fixed_lines, split_markdown_by_headings
+from app.services.code_chunker import (
+    chunk_by_fixed_lines,
+    chunk_python_file_by_symbols,
+    split_markdown_by_headings,
+)
 
 
 def test_chunk_by_fixed_lines_keeps_line_range():
@@ -49,4 +53,73 @@ def test_split_markdown_by_headings():
     assert sections[1][1] == [
         "## Section",
         "content",
+    ]
+
+
+
+
+def test_chunk_python_file_by_symbols_keeps_functions_as_chunks(tmp_path):
+    file_path = tmp_path / "sample.py"
+    file_path.write_text(
+        "\n".join(
+            [
+                "import os",
+                "",
+                "def hello():",
+                "    return 'hi'",
+                "",
+                "def add(a, b):",
+                "    return a + b",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    lines = file_path.read_text(encoding="utf-8").splitlines()
+
+    chunks = chunk_python_file_by_symbols(
+        file_path=str(file_path),
+        file_type="py",
+        lines=lines,
+    )
+
+    assert [(chunk.chunk_type, chunk.symbol_name, chunk.start_line, chunk.end_line) for chunk in chunks] == [
+        ("module", None, 1, 2),
+        ("function", "hello", 3, 4),
+        ("module", None, 5, 5),
+        ("function", "add", 6, 7),
+    ]
+
+
+def test_chunk_python_file_by_symbols_keeps_classes_as_chunks(tmp_path):
+    file_path = tmp_path / "sample.py"
+    file_path.write_text(
+        "\n".join(
+            [
+                "from pydantic import BaseModel",
+                "",
+                "class User(BaseModel):",
+                "    id: int",
+                "    name: str",
+                "",
+                "class Task(BaseModel):",
+                "    title: str",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    lines = file_path.read_text(encoding="utf-8").splitlines()
+
+    chunks = chunk_python_file_by_symbols(
+        file_path=str(file_path),
+        file_type="py",
+        lines=lines,
+    )
+
+    assert [(chunk.chunk_type, chunk.symbol_name, chunk.start_line, chunk.end_line) for chunk in chunks] == [
+        ("module", None, 1, 2),
+        ("class", "User", 3, 5),
+        ("module", None, 6, 6),
+        ("class", "Task", 7, 8),
     ]

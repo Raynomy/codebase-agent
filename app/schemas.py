@@ -47,6 +47,7 @@ class CodeChunk(BaseModel):
     end_line: int
     chunk_type: str
     content: str
+    symbol_name: str | None = None
 
 
 class ChunkPreviewRequest(BaseModel):

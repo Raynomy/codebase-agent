@@ -374,10 +374,11 @@ POST /repositories/chunks/preview
     {
       "file_path": "app/main.py",
       "file_type": "py",
-      "start_line": 1,
-      "end_line": 20,
-      "chunk_type": "python_lines",
-      "content": "..."
+      "start_line": 29,
+      "end_line": 30,
+      "chunk_type": "function",
+      "content": "def health_check():\n    return {\"status\": \"ok\"}",
+      "symbol_name": "health_check"
     }
   ]
 }
@@ -386,7 +387,8 @@ POST /repositories/chunks/preview
 当前切分策略：
 
 - Markdown / README：优先按标题切分，超长 section 再按固定行数切分
-- Python：基础版按固定行数切分
+- Python：优先使用 AST 识别 function / class，并将函数和类作为独立 chunk
+- Python 模块级代码：作为 `module` chunk
 - 其他文本文件：按固定行数切分
 
 ### 索引代码文件
@@ -436,6 +438,7 @@ POST /repositories/index
 - `start_line`
 - `end_line`
 - `chunk_type`
+- `symbol_name`
 - `content`
 
 当前阶段限制：
@@ -537,6 +540,10 @@ POST /repositories/ask
 - [x] 支持识别 Python function
 - [x] 支持识别 Python class
 - [x] 返回 `symbol_name`、`symbol_type`、`start_line`、`end_line`
+- [x] 实现函数级 chunk
+- [x] 实现类级 chunk
+- [x] 实现 module chunk
+- [x] 保存 `symbol_name`
 - [x] 接入 embedding model
 - [x] 接入 Qdrant 内存向量库
 - [x] 实现 `/repositories/index`
