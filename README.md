@@ -532,6 +532,11 @@ POST /repositories/ask
 - [x] 返回文件路径、文件类型和文件大小
 - [x] 实现安全读取代码文件
 - [x] 实现基础 chunk 切分
+- [x] 接入 Python AST 基础解析
+- [x] 实现 `parse_python_symbols`
+- [x] 支持识别 Python function
+- [x] 支持识别 Python class
+- [x] 返回 `symbol_name`、`symbol_type`、`start_line`、`end_line`
 - [x] 接入 embedding model
 - [x] 接入 Qdrant 内存向量库
 - [x] 实现 `/repositories/index`
