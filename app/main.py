@@ -15,7 +15,7 @@ from app.schemas import (
 )
 from app.services.code_chunker import preview_code_chunks
 from app.services.code_reader import read_code_file
-from app.services.index_service import index_repository_file
+from app.services.index_service import index_repository_files
 from app.services.repository_scanner import scan_repository
 from app.services.rag_service import ask_codebase
 
@@ -91,9 +91,9 @@ def preview_repository_chunks(request: ChunkPreviewRequest):
 @app.post("/repositories/index", response_model=RepositoryIndexResponse)
 def index_repository(request: RepositoryIndexRequest):
     try:
-        result = index_repository_file(
+        result = index_repository_files(
             repo_path=request.repo_path,
-            file_path=request.file_path,
+            file_paths=request.file_paths,
             chunk_size=request.chunk_size,
         )
     except ValueError as exc:

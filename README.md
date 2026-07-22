@@ -397,15 +397,20 @@ POST /repositories/chunks/preview
 POST /repositories/index
 ```
 
-用于将指定文件切分成 chunks，调用 embedding model 生成向量，并写入 Qdrant。
+用于将一个或多个指定文件切分成 chunks，调用 embedding model 生成向量，并写入 Qdrant。
 
 请求示例：
 
 ```json
 {
   "repo_path": "/Users/xiongzehao/代码/2026-07-codebase-agent",
-  "file_path": "README.md",
-  "chunk_size": 40
+  "file_paths": [
+    "README.md",
+    "app/main.py",
+    "app/schemas.py",
+    "tests/test_code_reader.py"
+  ],
+  "chunk_size": 120
 }
 ```
 
@@ -414,10 +419,16 @@ POST /repositories/index
 ```json
 {
   "repo_path": "/Users/xiongzehao/代码/2026-07-codebase-agent",
-  "file_path": "README.md",
-  "chunk_size": 40,
-  "chunk_count": 19,
-  "indexed_count": 19
+  "file_paths": [
+    "README.md",
+    "app/main.py",
+    "app/schemas.py",
+    "tests/test_code_reader.py"
+  ],
+  "chunk_size": 120,
+  "file_count": 4,
+  "chunk_count": 42,
+  "indexed_count": 42
 }
 ```
 
@@ -445,9 +456,8 @@ POST /repositories/index
 
 - Qdrant 使用内存模式 `QdrantClient(":memory:")`
 - 每次索引都会重建 collection
-- 当前只支持索引单个文件
-- 暂未实现多文件共同检索
 - 暂未实现稳定 `chunk_id`
+- 大文件或大量文件同时索引时，embedding API 可能出现超时或限流，需要后续加入 retry / batching
 
 Embedding 失败时，接口会返回 `503`。
 
@@ -572,7 +582,12 @@ POST /repositories/ask
 - [x] 要求回答必须基于 sources
 - [x] 资料不足时拒答
 - [x] 回答引用文件路径和行号
-- [ ] 实现多文件索引
+- [x] 实现多文件索引
+- [x] 支持 README、源码、测试文件混合检索
+- [x] 测试项目入口类问题
+- [x] 测试测试覆盖类问题
+- [x] 记录召回错误案例
+- [x] 调整 top-k 和相似度阈值
 - [ ] 提交代码
 
 ## 参考项目

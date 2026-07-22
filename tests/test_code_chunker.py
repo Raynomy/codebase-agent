@@ -86,7 +86,6 @@ def test_chunk_python_file_by_symbols_keeps_functions_as_chunks(tmp_path):
     assert [(chunk.chunk_type, chunk.symbol_name, chunk.start_line, chunk.end_line) for chunk in chunks] == [
         ("module", None, 1, 2),
         ("function", "hello", 3, 4),
-        ("module", None, 5, 5),
         ("function", "add", 6, 7),
     ]
 
@@ -120,6 +119,5 @@ def test_chunk_python_file_by_symbols_keeps_classes_as_chunks(tmp_path):
     assert [(chunk.chunk_type, chunk.symbol_name, chunk.start_line, chunk.end_line) for chunk in chunks] == [
         ("module", None, 1, 2),
         ("class", "User", 3, 5),
-        ("module", None, 6, 6),
         ("class", "Task", 7, 8),
     ]

@@ -1,7 +1,10 @@
+from uuid import uuid5, NAMESPACE_URL
+
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from app.schemas import CodeChunk
+
 
 
 COLLECTION_NAME = "code_chunks"
@@ -23,10 +26,17 @@ def recreate_collection() -> None:
 def upsert_chunks(chunks: list[CodeChunk], embeddings: list[list[float]]) -> int:
     points = []
 
-    for index, (chunk, embedding) in enumerate(zip(chunks, embeddings), start=1):
+    for chunk, embedding in zip(chunks, embeddings):
+        point_id = str(
+            uuid5(
+                NAMESPACE_URL,
+                f"{chunk.file_path}:{chunk.start_line}:{chunk.end_line}:{chunk.chunk_type}:{chunk.symbol_name}",
+            )
+        )
+
         points.append(
             PointStruct(
-                id=index,
+                id=point_id,
                 vector=embedding,
                 payload={
                     "file_path": chunk.file_path,

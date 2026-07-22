@@ -66,14 +66,15 @@ class ChunkPreviewResponse(BaseModel):
 
 class RepositoryIndexRequest(BaseModel):
     repo_path: str = Field(min_length=1)
-    file_path: str = Field(min_length=1)
+    file_paths: list[str] = Field(min_length=1)
     chunk_size: int = Field(default=40, ge=1, le=200)
 
 
 class RepositoryIndexResponse(BaseModel):
     repo_path: str
-    file_path: str
+    file_paths: list[str]
     chunk_size: int
+    file_count: int
     chunk_count: int
     indexed_count: int
 

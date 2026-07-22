@@ -103,7 +103,7 @@ def chunk_python_file_by_symbols(
 
     for line_number, line in enumerate(lines, start=1):
         if line_number in covered_lines:
-            if module_lines and module_start_line is not None:
+            if module_lines and module_start_line is not None and has_meaningful_content(module_lines):
                 chunks.append(
                     build_chunk(
                         file_path=file_path,
@@ -124,7 +124,7 @@ def chunk_python_file_by_symbols(
 
         module_lines.append(line)
 
-    if module_lines and module_start_line is not None:
+    if module_lines and module_start_line is not None and has_meaningful_content(module_lines):
         chunks.append(
             build_chunk(
                 file_path=file_path,
@@ -173,6 +173,10 @@ def chunk_by_fixed_lines(
 
     for start_index in range(0, len(lines), chunk_size):
         chunk_lines = lines[start_index : start_index + chunk_size]
+
+        if not has_meaningful_content(chunk_lines):
+            continue
+
         start_line = start_line_offset + start_index
 
         chunks.append(
@@ -186,6 +190,9 @@ def chunk_by_fixed_lines(
         )
 
     return chunks
+
+def has_meaningful_content(lines: list[str]) -> bool:
+    return any(line.strip() for line in lines)
 
 
 def build_chunk(
