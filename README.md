@@ -472,6 +472,14 @@ POST /repositories/ask
 -> 返回 answer + sources
 ```
 
+当前问答约束：
+
+- 回答必须基于检索到的 `sources`
+- 资料不足时必须拒答
+- 回答中尽量引用文件路径和行号范围
+- 如果 source 包含 `symbol_name`，回答中需要说明对应函数或类
+- 不允许编造未检索到的文件、函数、类、接口或调用关系
+
 请求示例：
 
 ```json
@@ -560,6 +568,10 @@ POST /repositories/ask
 - [x] sources 返回 `chunk_type`
 - [x] sources 返回 `symbol_name`
 - [x] sources 返回原始代码片段
+- [x] 设计 Codebase QA system prompt
+- [x] 要求回答必须基于 sources
+- [x] 资料不足时拒答
+- [x] 回答引用文件路径和行号
 - [ ] 实现多文件索引
 - [ ] 提交代码
 
